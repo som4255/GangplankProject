@@ -1,0 +1,6 @@
+[/Script/GameplayTags.GameplayTagsList]
+GameplayTagList=(Tag="GangplankQCT",DevComment="QCoolTime")
+GameplayTagList=(Tag="Q",DevComment="")
+GameplayTagList=(Tag="QCT",DevComment="SkillQ CollTime")
+GameplayTagList=(Tag="SkillQCT",DevComment="")
+
