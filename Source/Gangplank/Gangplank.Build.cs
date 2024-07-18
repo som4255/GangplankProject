@@ -8,6 +8,27 @@ public class Gangplank : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] {
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "InputCore",
+            "AIModule",
+            "GameplayTasks",
+            "NavigationSystem",
+            "UMG",
+            "CinematicCamera",
+            "EnhancedInput",
+            "Niagara",
+            "MovieScene",
+            "LevelSequence",
+            "MediaAssets",
+            "Networking",
+            "Sockets",
+            "ProceduralMeshComponent",
+            "Foliage",
+            "PhysicsCore",
+            "AnimGraphRuntime"
+        });
 	}
 }
