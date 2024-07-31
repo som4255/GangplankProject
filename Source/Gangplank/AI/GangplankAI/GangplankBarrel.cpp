@@ -11,9 +11,11 @@ AGangplankBarrel::AGangplankBarrel()
 
 	mCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
 	mMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+	mAttackPreview = CreateDefaultSubobject<UDecalComponent>(TEXT("AttackPreview"));
 
 	SetRootComponent(mCollision);
 	mMesh->SetupAttachment(mCollision);
+	mAttackPreview->SetupAttachment(mCollision);
 
 	mCollision->SetCollisionProfileName(TEXT("EnemySpawnObj"));
 	mMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -22,6 +24,9 @@ AGangplankBarrel::AGangplankBarrel()
 	mCollision->SetCapsuleHalfHeight(70.f);
 	mCollision->SetCapsuleRadius(55.f);
 	mMesh->SetRelativeLocation(FVector(0.f, 0.f, -69.f));
+	mAttackPreview->SetWorldScale3D(FVector(0.05f, 1.1f, 1.1f));
+	mAttackPreview->SetRelativeLocation(FVector(0.f, 0.f, -70.f));
+	mAttackPreview->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> Mesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Gangplank/Barrel/Gangplank_barrel.Gangplank_barrel'"));
 	if (Mesh.Succeeded())
@@ -36,10 +41,53 @@ AGangplankBarrel::AGangplankBarrel()
 	{
 		mMesh->SetAnimInstanceClass(AnimAsset.Class);
 	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance>
+		DecalAsset(TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Gangplank/Barrel/Materials/MI_BarrelAttackPreview.MI_BarrelAttackPreview'"));
+
+	if (DecalAsset.Succeeded())
+	{
+		mAttackPreview->SetDecalMaterial(DecalAsset.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Niagara(TEXT("/Script/Niagara.NiagaraSystem'/Game/Gangplank/Barrel/NS_BarrelConnection.NS_BarrelConnection'"));
+	if (Niagara.Succeeded())
+	{
+		mBarrelConnection = Niagara.Object;
+	}
 }
 
 void AGangplankBarrel::OnConstruction(const FTransform& Transform)
 {
+	mBarrelConnectionArray.Empty();
+
+	TArray<FHitResult> result;
+	FCollisionQueryParams	param(NAME_None, false, this);
+	FRotator mFireRot = FRotator::ZeroRotator;
+
+	bool Collision = GetWorld()->SweepMultiByChannel(
+		result,
+		GetActorLocation(),
+		GetActorLocation(),
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel9,
+		FCollisionShape::MakeSphere(900.f),
+		param
+	);
+
+	if (Collision)
+	{
+		for (auto& barrel : result)
+		{
+			TObjectPtr<UNiagaraComponent> NEWNIAGARA = 
+				NewObject<UNiagaraComponent>(this, UNiagaraComponent::StaticClass(), TEXT("BarrelConnection"));
+
+			NEWNIAGARA->SetAsset(mBarrelConnection);
+			NEWNIAGARA->SetVariableVec3(FName("TargetLoc"), barrel.Location);
+			NEWNIAGARA->SetupAttachment(mCollision);
+			mBarrelConnectionArray.Add(NEWNIAGARA);
+		}
+	}
 }
 
 void AGangplankBarrel::Explode()
@@ -66,6 +114,7 @@ void AGangplankBarrel::Explode()
 void AGangplankBarrel::BeginPlay()
 {
 	Super::BeginPlay();
+	
 }
 
 float AGangplankBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
@@ -81,7 +130,7 @@ float AGangplankBarrel::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		&AGangplankBarrel::Explode,
 		1.f, //0은 작동을 안한다 찾아보니 언리얼이 InRate값이 0인 경우는 지원히지 않는다고 한다.
 		false,
-		0.2f
+		0.4f
 	);
 
 	return 0.0f;
@@ -92,12 +141,12 @@ void AGangplankBarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-#if ENABLE_DRAW_DEBUG
-	DrawDebugSphere(GetWorld(), GetActorLocation(),
-		450.f,
-		20, FColor::Red, false, 0.35f);
-
-#endif
+	//#if ENABLE_DRAW_DEBUG
+//DrawDebugSphere(GetWorld(), GetActorLocation(),
+//	450.f,
+//	20, FColor::Red, false, 0.35f);
+//
+//#endif
 }
 
 

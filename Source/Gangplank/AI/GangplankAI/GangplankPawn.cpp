@@ -2,7 +2,6 @@
 
 
 #include "GangplankPawn.h"
-#include "math.h"
 
 AGangplankPawn::AGangplankPawn()
 {
@@ -26,11 +25,6 @@ AGangplankPawn::AGangplankPawn()
 
 	LoadAIData(mName);
 	LoadVoiceData(mName);
-}
-
-void AGangplankPawn::LoadAIData(FName Name)
-{
-	Super::LoadAIData(Name);
 }
 
 void AGangplankPawn::SetCoolTime(EGangplankSkill Skill)
@@ -105,22 +99,19 @@ void AGangplankPawn::Attack_SkillQ()
 		0.5f
 	);
 
+	if (!IsValid(mTargetActor))
+		return;
+
+	//Bullet Spawn
 	FActorSpawnParameters	ActorParam;
 	ActorParam.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	FRotator BulletRot = FRotator::ZeroRotator;
-
-	if (IsValid(Super::mTargetActor))
-	{
-		BulletRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Super::mTargetActor->GetActorLocation());
-	}
 	
 	if (IsValid(mBulletClass))
 		GetWorld()->SpawnActor<AGangplankBullet>(
 			mBulletClass,
 			mMesh->GetSocketLocation("MuzzleSocket"),
-			BulletRot, 
+			mSkillQTargetRot, 
 			ActorParam
 		);
 }

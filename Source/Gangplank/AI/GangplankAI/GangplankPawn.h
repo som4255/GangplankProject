@@ -55,24 +55,23 @@ private :
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AGangplankBullet> mBulletClass;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGangplankAnimInstance> mAnim;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UNavigationSystemV1> mNavMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGangplankCooldownTimer> mTimerComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FCooldownTimer> mCooldownTimer;
 
-	TObjectPtr<APawn> mTargetActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FRotator mSkillQTargetRot = FRotator::ZeroRotator;
 
 	//스킬 사용 가능 유무를 2진수 스위치로 표기 EGangplankSkill enum값을 빼거나 더하는 것으로 키고 끌 수 있음
 	int mSkillCanUse = 0b10000000101;
-
-	bool mCanAttack = true;
-
-protected :
-	void LoadAIData(FName Name) override;
 
 public :
 	void SetCoolTime(EGangplankSkill Skill);
@@ -80,19 +79,14 @@ public :
 	void Attack_SkillE();
 	void Attack_SkillQ();
 
+	void SetSkillQTargetRot(FRotator TargetRot)
+	{
+		mSkillQTargetRot = TargetRot;
+	}
+
 	int GetSkillCanUse()
 	{
 		return mSkillCanUse;
-	}
-
-	void MoveStop()
-	{
-		mMovement->MaxSpeed = 0.f;
-	}
-
-	void MoveRecovery()
-	{
-		mMovement->MaxSpeed = mMoveSpeed;
 	}
 
 	const TObjectPtr<class UGangplankAnimInstance>& GetAnimInstance() const
@@ -100,30 +94,10 @@ public :
 		return mAnim;
 	}
 
-	bool GetCanAttack()
-	{
-		return mCanAttack;
-	}
-
-	void SetCanAttack(bool CanDo)
-	{
-		mCanAttack = CanDo;
-	}
-
 	void OnSkillCanUse(EGangplankSkill Skill)
 	{
 		float i = Skill;
 		mSkillCanUse += pow(2, i);
-	}
-
-	TObjectPtr<USkeletalMeshComponent> GetMesh()
-	{
-		return mMesh;
-	}
-
-	void SetTarget(TObjectPtr<APawn> Target)
-	{
-		mTargetActor = Target;
 	}
 
 protected:

@@ -51,7 +51,7 @@
 #include "UObject/NoExportTypes.h"
 #include "GameInfo.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType) //몬스터 스테이터스
 struct FEnemyInfo : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
@@ -76,7 +76,7 @@ public :
 	float MoveSpeed = 0.f;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType) //음성 파일
 struct FSkillVoice : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()

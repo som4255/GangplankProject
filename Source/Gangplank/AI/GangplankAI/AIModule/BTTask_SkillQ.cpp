@@ -36,8 +36,44 @@ EBTNodeResult::Type UBTTask_SkillQ::ExecuteTask(
 	mAnimInst = mAIPawn->GetAnimInstance();
 	if (!IsValid(mAnimInst))
 		return EBTNodeResult::Failed;
-	
+
 	mTarget = Cast<AActor>(mController->GetBlackboardComponent()->GetValueAsObject(TEXT("Target")));
+
+	TArray<FHitResult> result;
+	FCollisionQueryParams	param(NAME_None, false, mAIPawn);
+	FRotator mFireRot = FRotator::ZeroRotator;
+
+	bool Collision = GetWorld()->SweepMultiByChannel(
+		result,
+		mTarget->GetActorLocation(),
+		mTarget->GetActorLocation(),
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel9,
+		FCollisionShape::MakeSphere(450.f),
+		param
+	);
+
+	if (Collision)
+	{
+		mFireRot = UKismetMathLibrary::FindLookAtRotation(
+			mAIPawn->GetActorLocation(), 
+			result[0].GetActor()->GetActorLocation()
+		);
+
+		mAIPawn->SetSkillQTargetRot(mFireRot);
+	}
+
+	else
+	{
+		mFireRot = UKismetMathLibrary::FindLookAtRotation(
+			mAIPawn->GetActorLocation(), 
+			mTarget->GetActorLocation()
+		);
+
+		mAIPawn->SetSkillQTargetRot(mFireRot);
+	}
+
+	mAIPawn->SetActorRotation(mFireRot, ETeleportType::None);
 	
 	if (!IsValid(mTarget))
 	{
@@ -76,10 +112,6 @@ void UBTTask_SkillQ::TickTask(UBehaviorTreeComponent& OwnerComp,
 	
 		return;
 	}
-	
-	FRotator Dir = UKismetMathLibrary::FindLookAtRotation(mAIPawn->GetMesh()->GetSocketLocation("MuzzleSocket"), mTarget->GetActorLocation());
-	
-	mAIPawn->SetActorRotation(Dir);
 
 	if (mAIPawn->GetCanAttack())
 	{

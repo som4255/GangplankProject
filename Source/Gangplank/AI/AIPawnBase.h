@@ -17,7 +17,7 @@ public:
 	AAIPawnBase();
 
 private:
-	static TObjectPtr<UDataTable>	mEnemyDataTable;
+	static TObjectPtr<UDataTable>	mEnemyDataTable; 
 	static TObjectPtr<UDataTable>	mVoiceDataTable;
 
 protected:
@@ -57,12 +57,39 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<AActor> mTargetActor;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool mCanAttack = true;
+
 public :
 	void SetTarget(TObjectPtr<AActor> Target)
 	{
 		mTargetActor = Target;
 	}
 
+	bool GetCanAttack()
+	{
+		return mCanAttack;
+	}
+
+	void SetCanAttack(bool CanDo)
+	{
+		mCanAttack = CanDo;
+	}
+
+	void MoveStop()
+	{
+		mMovement->MaxSpeed = 0.f;
+	}
+
+	void MoveRecovery()
+	{
+		mMovement->MaxSpeed = mMoveSpeed;
+	}
+
+	TObjectPtr<USkeletalMeshComponent> GetMesh()
+	{
+		return mMesh;
+	}
 
 public:	
 	// Called every frame

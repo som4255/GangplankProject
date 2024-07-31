@@ -39,6 +39,7 @@ AAIPawnBase::AAIPawnBase()
 	mCollision->SetCollisionProfileName(TEXT("Enemy"));
 	mMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	mMesh->bReceivesDecals = false;
 }
 
 void AAIPawnBase::LoadAIData(FName Name)
