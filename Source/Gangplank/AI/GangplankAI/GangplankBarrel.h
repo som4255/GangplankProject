@@ -17,6 +17,7 @@ public:
 	AGangplankBarrel();
 
 protected:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCapsuleComponent>	mCollision;
 
@@ -27,17 +28,16 @@ protected:
 	TObjectPtr<UDecalComponent>	mAttackPreview;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<UNiagaraComponent>>	mBarrelConnectionArray;
+	TObjectPtr<UParticleSystem>	mExplosionTraceParticle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UNiagaraSystem>	mBarrelConnection;
+	TObjectPtr<UParticleSystem>	mExplosionParticle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase>	mExplodeSound;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float		mHP;
-
-
-
-	FTimerHandle ExplodeTimer;
 
 public :
 	void Explode();

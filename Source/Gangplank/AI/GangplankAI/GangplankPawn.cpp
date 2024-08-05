@@ -72,7 +72,7 @@ void AGangplankPawn::Attack_SkillE()
 	
 	for (auto& SpawnLoc : BarrelLoc)
 	{
-		SpawnLoc += FVector(0.f, 0.f, 107.f);
+		SpawnLoc += FVector(0.f, 0.f, BARRELHEIGHT);
 
 		if(IsValid(mBarrelClass))
 			GetWorld()->SpawnActor<AGangplankBarrel>(mBarrelClass,

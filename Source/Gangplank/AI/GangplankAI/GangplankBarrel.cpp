@@ -2,6 +2,9 @@
 
 
 #include "GangplankBarrel.h"
+#include "GangplankBarrelConnection.h"
+
+const float BARRELHEIGHT = 107.f;
 
 // Sets default values
 AGangplankBarrel::AGangplankBarrel()
@@ -12,6 +15,7 @@ AGangplankBarrel::AGangplankBarrel()
 	mCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
 	mMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	mAttackPreview = CreateDefaultSubobject<UDecalComponent>(TEXT("AttackPreview"));
+
 
 	SetRootComponent(mCollision);
 	mMesh->SetupAttachment(mCollision);
@@ -24,7 +28,7 @@ AGangplankBarrel::AGangplankBarrel()
 	mCollision->SetCapsuleHalfHeight(70.f);
 	mCollision->SetCapsuleRadius(55.f);
 	mMesh->SetRelativeLocation(FVector(0.f, 0.f, -69.f));
-	mAttackPreview->SetWorldScale3D(FVector(0.05f, 1.1f, 1.1f));
+	mAttackPreview->SetWorldScale3D(FVector(0.05f, 1.3f, 1.3f));
 	mAttackPreview->SetRelativeLocation(FVector(0.f, 0.f, -70.f));
 	mAttackPreview->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
 
@@ -36,7 +40,6 @@ AGangplankBarrel::AGangplankBarrel()
 
 	static ConstructorHelpers::FClassFinder<UAnimInstance>
 		AnimAsset(TEXT("/Script/Engine.AnimBlueprint'/Game/Gangplank/Barrel/AB_GangplankBarrel.AB_GangplankBarrel_C'"));
-
 	if (AnimAsset.Succeeded())
 	{
 		mMesh->SetAnimInstanceClass(AnimAsset.Class);
@@ -44,55 +47,74 @@ AGangplankBarrel::AGangplankBarrel()
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance>
 		DecalAsset(TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Gangplank/Barrel/Materials/MI_BarrelAttackPreview.MI_BarrelAttackPreview'"));
-
 	if (DecalAsset.Succeeded())
 	{
 		mAttackPreview->SetDecalMaterial(DecalAsset.Object);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Niagara(TEXT("/Script/Niagara.NiagaraSystem'/Game/Gangplank/Barrel/NS_BarrelConnection.NS_BarrelConnection'"));
-	if (Niagara.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UParticleSystem>
+		ExplosionParticle(TEXT("/Script/Engine.ParticleSystem'/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_A.P_Explosion_Big_A'"));
+	if (ExplosionParticle.Succeeded())
 	{
-		mBarrelConnection = Niagara.Object;
+		mExplosionParticle = ExplosionParticle.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>
+		SoundAsset(TEXT("/Script/Engine.SoundWave'/Game/Gangplank/Sound/SkillSound/Spell3_Explode-4.Spell3_Explode-4'"));
+	if (SoundAsset.Succeeded())
+	{
+		mExplodeSound = SoundAsset.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem>
+		ExplosionTraceParticle(TEXT("/Script/Engine.ParticleSystem'/Game/InfinityBladeEffects/Effects/FX_Combat_Base/death/P_Death_BlastMark.P_Death_BlastMark'"));
+	if (ExplosionTraceParticle.Succeeded())
+	{
+		mExplosionTraceParticle = ExplosionTraceParticle.Object;
 	}
 }
 
 void AGangplankBarrel::OnConstruction(const FTransform& Transform)
 {
-	mBarrelConnectionArray.Empty();
+	Super::OnConstruction(Transform);
 
-	TArray<FHitResult> result;
-	FCollisionQueryParams	param(NAME_None, false, this);
-	FRotator mFireRot = FRotator::ZeroRotator;
-
-	bool Collision = GetWorld()->SweepMultiByChannel(
-		result,
-		GetActorLocation(),
-		GetActorLocation(),
-		FQuat::Identity,
-		ECollisionChannel::ECC_GameTraceChannel9,
-		FCollisionShape::MakeSphere(900.f),
-		param
-	);
-
-	if (Collision)
-	{
-		for (auto& barrel : result)
-		{
-			TObjectPtr<UNiagaraComponent> NEWNIAGARA = 
-				NewObject<UNiagaraComponent>(this, UNiagaraComponent::StaticClass(), TEXT("BarrelConnection"));
-
-			NEWNIAGARA->SetAsset(mBarrelConnection);
-			NEWNIAGARA->SetVariableVec3(FName("TargetLoc"), barrel.Location);
-			NEWNIAGARA->SetupAttachment(mCollision);
-			mBarrelConnectionArray.Add(NEWNIAGARA);
-		}
-	}
 }
 
 void AGangplankBarrel::Explode()
 {
+	if (IsValid(mExplosionParticle))
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), 
+			mExplosionParticle,
+			GetActorLocation(),
+			FRotator::ZeroRotator,
+			FVector(1.5f, 1.5f, 1.5f)
+		);
+	}
+
+	if (IsValid(mExplodeSound))
+	{
+		UGameplayStatics::PlaySound2D(
+			GetWorld(),
+			mExplodeSound,
+			0.5f
+		);
+	}
+
+	if (IsValid(mExplosionTraceParticle))
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			mExplosionTraceParticle,
+			GetActorLocation() + FVector(180.f, 0.f, -BARRELHEIGHT),
+			FRotator::ZeroRotator,
+			FVector(1.8f, 1.8f, 1.f)
+		);
+	}
+
 	TArray<TObjectPtr<AActor>> IgnoreActors;
+	IgnoreActors.Add(this);
 
 	UGameplayStatics::ApplyRadialDamage(
 		GetWorld(),
@@ -113,8 +135,41 @@ void AGangplankBarrel::Explode()
 // Called when the game starts or when spawned
 void AGangplankBarrel::BeginPlay()
 {
-	Super::BeginPlay();
-	
+	Super::BeginPlay();	
+
+	TArray<FHitResult> result;
+	FCollisionQueryParams	param(NAME_None, false, this);
+	param.AddIgnoredActor(this);
+
+	FActorSpawnParameters	ActorParam;
+	ActorParam.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	bool Collision = GetWorld()->SweepMultiByChannel(
+		result,
+		GetActorLocation(),
+		GetActorLocation(),
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel9,
+		FCollisionShape::MakeSphere(900.f),
+		param
+	);
+
+	if (Collision)
+	{
+		for (auto& barrel : result)
+		{
+			TObjectPtr<AGangplankBarrelConnection> BarrelCon =
+				GetWorld()->SpawnActor<AGangplankBarrelConnection>(
+					AGangplankBarrelConnection::StaticClass(),
+					GetActorLocation(),
+					FRotator::ZeroRotator,
+					ActorParam
+				);
+
+			BarrelCon->Init(this, barrel.GetActor());
+		}
+	}
 }
 
 float AGangplankBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
@@ -122,16 +177,8 @@ float AGangplankBarrel::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	mCollision->SetCollisionProfileName("NoCollision");
-
-	GetWorld()->GetTimerManager().SetTimer(
-		ExplodeTimer,
-		this,
-		&AGangplankBarrel::Explode,
-		1.f, //0은 작동을 안한다 찾아보니 언리얼이 InRate값이 0인 경우는 지원히지 않는다고 한다.
-		false,
-		0.4f
-	);
+	if(Cast<class AGangplankBullet>(DamageCauser))
+		Explode();
 
 	return 0.0f;
 }
@@ -140,13 +187,6 @@ float AGangplankBarrel::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 void AGangplankBarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//#if ENABLE_DRAW_DEBUG
-//DrawDebugSphere(GetWorld(), GetActorLocation(),
-//	450.f,
-//	20, FColor::Red, false, 0.35f);
-//
-//#endif
 }
 
 

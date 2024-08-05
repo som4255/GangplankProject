@@ -31,7 +31,7 @@ void UBTService_AIFindTarget::TickNode(
 		AILoc, AILoc,
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel2,
-		FCollisionShape::MakeSphere(3000.f),
+		FCollisionShape::MakeSphere(5000.f),
 		param);
 
 	if (Collision)

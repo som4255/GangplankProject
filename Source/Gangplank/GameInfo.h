@@ -51,6 +51,21 @@
 #include "UObject/NoExportTypes.h"
 #include "GameInfo.generated.h"
 
+//#if ENABLE_DRAW_DEBUG
+//DrawDebugSphere(GetWorld(), GetActorLocation(),
+//	450.f,
+//	20, FColor::Red, false, 0.35f);
+//
+//#endif
+
+//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red,
+//	FString::Printf(TEXT("Location: X=%.2f, Y=%.2f, Z=%.2f"),
+//		barrel.Location.X,
+//		barrel.Location.Y,
+//		barrel.Location.Z
+//	)
+//);
+
 USTRUCT(BlueprintType) //몬스터 스테이터스
 struct FEnemyInfo : public FTableRowBase
 {

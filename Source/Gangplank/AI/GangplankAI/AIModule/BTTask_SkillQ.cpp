@@ -39,6 +39,13 @@ EBTNodeResult::Type UBTTask_SkillQ::ExecuteTask(
 
 	mTarget = Cast<AActor>(mController->GetBlackboardComponent()->GetValueAsObject(TEXT("Target")));
 
+	if (!IsValid(mTarget))
+	{
+		mController->StopMovement();
+
+		return EBTNodeResult::Failed;
+	}
+
 	TArray<FHitResult> result;
 	FCollisionQueryParams	param(NAME_None, false, mAIPawn);
 	FRotator mFireRot = FRotator::ZeroRotator;
@@ -49,39 +56,28 @@ EBTNodeResult::Type UBTTask_SkillQ::ExecuteTask(
 		mTarget->GetActorLocation(),
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel9,
-		FCollisionShape::MakeSphere(450.f),
+		FCollisionShape::MakeSphere(400.f),
 		param
 	);
 
 	if (Collision)
 	{
 		mFireRot = UKismetMathLibrary::FindLookAtRotation(
-			mAIPawn->GetActorLocation(), 
+			mAIPawn->GetMesh()->GetSocketLocation("MuzzleSocket"),
 			result[0].GetActor()->GetActorLocation()
 		);
-
-		mAIPawn->SetSkillQTargetRot(mFireRot);
 	}
 
 	else
 	{
 		mFireRot = UKismetMathLibrary::FindLookAtRotation(
-			mAIPawn->GetActorLocation(), 
+			mAIPawn->GetMesh()->GetSocketLocation("MuzzleSocket"),
 			mTarget->GetActorLocation()
 		);
-
-		mAIPawn->SetSkillQTargetRot(mFireRot);
 	}
 
+	mAIPawn->SetSkillQTargetRot(mFireRot);
 	mAIPawn->SetActorRotation(mFireRot, ETeleportType::None);
-	
-	if (!IsValid(mTarget))
-	{
-		mController->StopMovement();
-	
-		return EBTNodeResult::Failed;
-	}
-	
 	mAnimInst->Montage_Play(mSkillQAnim);
 	mAIPawn->SetCanAttack(false);
 	mAIPawn->SetCoolTime(EGangplankSkill::SkillQ);

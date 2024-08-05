@@ -11,7 +11,8 @@
 #include "NavigationSystem.h"
 #include "GangplankPawn.generated.h"
 
-DECLARE_DELEGATE(FTimerDelegate);
+//기본제공이라 안해줘도된다.
+//DECLARE_DELEGATE(FTimerDelegate);
 
 USTRUCT(BlueprintType)
 struct FCooldownTimer
