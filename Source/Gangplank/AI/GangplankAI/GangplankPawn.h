@@ -69,7 +69,10 @@ private :
 	TArray<FCooldownTimer> mCooldownTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FRotator mSkillQTargetRot = FRotator::ZeroRotator;
+	FRotator mSkillQTargetRot;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FVector mAdditionalBarrelLoc = FVector::ZeroVector;
 
 	//스킬 사용 가능 유무를 2진수 스위치로 표기 EGangplankSkill enum값을 빼거나 더하는 것으로 키고 끌 수 있음
 	int mSkillCanUse = 0b10000000101;
@@ -77,12 +80,14 @@ private :
 public :
 	void SetCoolTime(EGangplankSkill Skill);
 	void AddCooldownTimer(float Time, FName Name);
-	void Attack_SkillE();
 	void Attack_SkillQ();
+	void Attack_SkillE();
+	void Attack_SkillE_Additional();
 
-	void SetSkillQTargetRot(FRotator TargetRot)
+	void SetSkillQTargetRot(const FRotator& TargetRot, const FVector& TargetLoc = FVector::ZeroVector)
 	{
 		mSkillQTargetRot = TargetRot;
+		mAdditionalBarrelLoc = TargetLoc;
 	}
 
 	int GetSkillCanUse()

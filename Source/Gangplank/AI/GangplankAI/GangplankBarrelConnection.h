@@ -47,7 +47,7 @@ private:
 	void TrigglerEndBarrel();
 
 	UFUNCTION()
-	void Activate(FVector Start, FVector End);
+	void Activate(const FVector& Start, const FVector& End);
 
 public :
 	void Init(TObjectPtr<AActor> Start,TObjectPtr<AActor> End);

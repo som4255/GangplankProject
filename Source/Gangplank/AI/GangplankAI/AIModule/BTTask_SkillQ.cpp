@@ -66,6 +66,10 @@ EBTNodeResult::Type UBTTask_SkillQ::ExecuteTask(
 			mAIPawn->GetMesh()->GetSocketLocation("MuzzleSocket"),
 			result[0].GetActor()->GetActorLocation()
 		);
+
+		mFireRot.Roll = 0.f;
+		mFireRot.Pitch = 0.f;
+		mAIPawn->SetSkillQTargetRot(mFireRot, result[0].GetActor()->GetActorLocation());
 	}
 
 	else
@@ -74,10 +78,13 @@ EBTNodeResult::Type UBTTask_SkillQ::ExecuteTask(
 			mAIPawn->GetMesh()->GetSocketLocation("MuzzleSocket"),
 			mTarget->GetActorLocation()
 		);
+		
+		mFireRot.Roll = 0.f;
+		mFireRot.Pitch = 0.f;
+		mAIPawn->SetSkillQTargetRot(mFireRot);
 	}
 
-	mAIPawn->SetSkillQTargetRot(mFireRot);
-	mAIPawn->SetActorRotation(mFireRot, ETeleportType::None);
+	mAIPawn->SetActorRotation(mFireRot, ETeleportType::TeleportPhysics);
 	mAnimInst->Montage_Play(mSkillQAnim);
 	mAIPawn->SetCanAttack(false);
 	mAIPawn->SetCoolTime(EGangplankSkill::SkillQ);

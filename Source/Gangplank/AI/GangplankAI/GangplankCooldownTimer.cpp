@@ -26,8 +26,6 @@ void UGangplankCooldownTimer::SkillQTimer()
 		return;
 
 	GangplankPawn->OnSkillCanUse(EGangplankSkill::SkillQ);
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("ReloadQ"));
 }
 
 void UGangplankCooldownTimer::SkillWTimer()

@@ -49,7 +49,7 @@ void AGangplankBarrelConnection::TrigglerEndBarrel()
 	Destroy();
 }
 
-void AGangplankBarrelConnection::Activate(FVector Start, FVector End)
+void AGangplankBarrelConnection::Activate(const FVector& Start, const FVector& End)
 {
 	if (ElapsedTime < ExplosionTime)
 	{
@@ -83,26 +83,32 @@ void AGangplankBarrelConnection::Tick(float DeltaTime)
 		HasbeenActivate = true;
 		mNiagaraComponent->SetVisibility(false);
 		mIgnitionParticle->SetActive(true);
-		mIgnitionParticle->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(EndLoc,StartLoc));
-
+		mIgnitionParticle->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(EndLoc, StartLoc));
+		
 		GetWorld()->GetTimerManager().SetTimer(
 			TrigglerTimer,
 			this,
 			&AGangplankBarrelConnection::TrigglerEndBarrel,
-			1.f, 
+			1.f,
 			false,
 			ExplosionTime
 		);
 
-		TimerDel.BindUFunction(this, FName("Activate"), StartLoc, EndLoc);
-		mIgnitionParticle->ActivateSystem();
+		if (mBarrelEnd->GetCanIgnition()) 
+		{
+			//이미 터진 화약통에서 화약에 붙이 붙지 않도록 설정
+			mBarrelEnd->Ignition();
 
-		GetWorld()->GetTimerManager().SetTimer(
-			IgnitionTimer,
-			TimerDel, 
-			0.02f,
-			true
-		);
+			TimerDel.BindUFunction(this, FName("Activate"), StartLoc, EndLoc);
+			mIgnitionParticle->ActivateSystem();
+
+			GetWorld()->GetTimerManager().SetTimer(
+				IgnitionTimer,
+				TimerDel,
+				0.02f,
+				true
+			);
+		}
 	}
 
 	else if (!IsValid(mBarrelEnd) && HasbeenActivate == false)
@@ -121,15 +127,20 @@ void AGangplankBarrelConnection::Tick(float DeltaTime)
 			ExplosionTime
 		);
 
-		TimerDel.BindUFunction(this, FName("Activate"), EndLoc, StartLoc);
-		mIgnitionParticle->ActivateSystem();
+		if (mBarrelStart->GetCanIgnition())
+		{
+			mBarrelStart->Ignition();
 
-		GetWorld()->GetTimerManager().SetTimer(
-			IgnitionTimer,
-			TimerDel,
-			0.02f,
-			true
-		);
+			TimerDel.BindUFunction(this, FName("Activate"), EndLoc, StartLoc);
+			mIgnitionParticle->ActivateSystem();
+
+			GetWorld()->GetTimerManager().SetTimer(
+				IgnitionTimer,
+				TimerDel,
+				0.02f,
+				true
+			);
+		}
 	}
 }
 

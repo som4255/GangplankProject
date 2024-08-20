@@ -4,14 +4,14 @@
 #include "GangplankBarrel.h"
 #include "GangplankBarrelConnection.h"
 
-const float BARRELHEIGHT = 107.f;
+
 
 // Sets default values
 AGangplankBarrel::AGangplankBarrel()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	mCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
 	mMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	mAttackPreview = CreateDefaultSubobject<UDecalComponent>(TEXT("AttackPreview"));

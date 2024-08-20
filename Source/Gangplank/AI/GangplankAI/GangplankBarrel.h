@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "GangplankBarrel.generated.h"
 
+inline constexpr float BARRELHEIGHT = 107.f;
+
 UCLASS()
 class GANGPLANK_API AGangplankBarrel : public AActor
 {
@@ -39,8 +41,20 @@ protected:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float		mHP;
 
+	bool mCanIgnition = true;
+
 public :
 	void Explode();
+
+	void Ignition()
+	{
+		mCanIgnition = false;
+	}
+
+	bool GetCanIgnition()
+	{
+		return mCanIgnition;
+	}
 
 protected:
 	// Called when the game starts or when spawned
